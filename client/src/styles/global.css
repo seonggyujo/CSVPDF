@@ -22,7 +22,7 @@
   --color-warning: #ff9500;
 
   /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   
   /* Spacing */
   --spacing-xs: 4px;
