@@ -18,22 +18,41 @@ const MAX_COLUMNS = 100;
 const decodeFileToUtf8 = (arrayBuffer) => {
   const uint8Array = new Uint8Array(arrayBuffer);
   
-  // 인코딩 감지
-  const detected = jschardet.detect(Buffer.from(uint8Array));
-  let encoding = detected.encoding || 'UTF-8';
+  // 1. BOM 확인 (UTF-8 BOM: EF BB BF)
+  if (uint8Array.length >= 3 && 
+      uint8Array[0] === 0xEF && 
+      uint8Array[1] === 0xBB && 
+      uint8Array[2] === 0xBF) {
+    return iconv.decode(Buffer.from(uint8Array), 'UTF-8');
+  }
   
-  // EUC-KR 계열 통합 (CP949, EUC-KR, ISO-8859-1 등)
-  if (encoding === 'ISO-8859-1' || encoding === 'windows-1252' || encoding === 'ascii') {
-    // 한글이 포함된 파일인데 잘못 감지된 경우 EUC-KR로 시도
-    encoding = 'EUC-KR';
+  // 2. 샘플링: 처음 10KB만 사용하여 인코딩 감지 (대용량 파일 대응)
+  const sampleSize = Math.min(uint8Array.length, 10000);
+  const sample = uint8Array.slice(0, sampleSize);
+  
+  const detected = jschardet.detect(Buffer.from(sample));
+  let encoding = detected.encoding || 'CP949';
+  
+  // 3. 신뢰도가 낮거나 잘못 감지된 경우 CP949로 처리
+  const lowConfidenceEncodings = ['ISO-8859-1', 'windows-1252', 'ascii', 'TIS-620'];
+  if (detected.confidence < 0.7 || lowConfidenceEncodings.includes(encoding)) {
+    encoding = 'CP949';
+  }
+  
+  // 4. EUC-KR → CP949 통합 (CP949가 EUC-KR의 확장)
+  if (encoding === 'EUC-KR') {
+    encoding = 'CP949';
   }
   
   try {
-    const decoded = iconv.decode(Buffer.from(uint8Array), encoding);
-    return decoded;
+    return iconv.decode(Buffer.from(uint8Array), encoding);
   } catch {
-    // 디코딩 실패 시 UTF-8로 fallback
-    return iconv.decode(Buffer.from(uint8Array), 'UTF-8');
+    // 5. 실패 시 CP949 → UTF-8 순서로 fallback
+    try {
+      return iconv.decode(Buffer.from(uint8Array), 'CP949');
+    } catch {
+      return iconv.decode(Buffer.from(uint8Array), 'UTF-8');
+    }
   }
 };
 
