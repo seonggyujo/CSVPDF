@@ -6,6 +6,11 @@ import FileDropZone from '../components/common/FileDropZone';
 import { useToast } from '../context/ToastContext';
 import './CsvPage.css';
 
+// Security limits
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_ROWS = 50000;
+const MAX_COLUMNS = 100;
+
 function CsvPage() {
   const [data, setData] = useState(null);
   const [headers, setHeaders] = useState([]);
@@ -20,25 +25,46 @@ function CsvPage() {
       return;
     }
 
+    // Security: File size limit
+    if (file.size > MAX_FILE_SIZE) {
+      showToast(`파일 크기는 ${MAX_FILE_SIZE / 1024 / 1024}MB를 초과할 수 없습니다`, 'error');
+      return;
+    }
+
     setIsLoading(true);
     setFileName(file.name);
 
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
+      preview: MAX_ROWS + 1, // Read one extra to detect if file exceeds limit
       complete: (results) => {
-        if (results.errors.length > 0) {
-          showToast('CSV 파싱 중 오류가 발생했습니다', 'error');
+        // Security: Check column limit
+        const fields = results.meta.fields || [];
+        if (fields.length > MAX_COLUMNS) {
+          showToast(`열 수는 ${MAX_COLUMNS}개를 초과할 수 없습니다`, 'error');
+          setIsLoading(false);
+          return;
+        }
+
+        // Security: Check row limit (불변성 유지)
+        let parsedData = results.data;
+        if (parsedData.length > MAX_ROWS) {
+          showToast(`행 수가 ${MAX_ROWS.toLocaleString()}개를 초과합니다. 처음 ${MAX_ROWS.toLocaleString()}행만 표시합니다`, 'warning');
+          parsedData = parsedData.slice(0, MAX_ROWS);
+        }
+
+        if (results.errors.length > 0 && process.env.NODE_ENV !== 'production') {
           console.error('Parse errors:', results.errors);
         }
-        setHeaders(results.meta.fields || []);
-        setData(results.data);
+        
+        setHeaders(fields);
+        setData(parsedData);
         setIsLoading(false);
         showToast('CSV 파일을 성공적으로 불러왔습니다', 'success');
       },
-      error: (error) => {
+      error: () => {
         showToast('파일을 읽는 중 오류가 발생했습니다', 'error');
-        console.error('Parse error:', error);
         setIsLoading(false);
       }
     });
@@ -117,7 +143,7 @@ function CsvPage() {
             <p className="file-drop-text">
               {isLoading ? '파일을 불러오는 중...' : 'CSV 파일을 드래그하거나 클릭하여 업로드'}
             </p>
-            <p className="file-drop-hint">.csv 파일만 지원됩니다</p>
+            <p className="file-drop-hint">.csv 파일만 지원 (최대 10MB, 50,000행)</p>
           </FileDropZone>
         </Card>
       ) : (

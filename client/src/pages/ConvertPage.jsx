@@ -72,10 +72,14 @@ function ConvertPage() {
       showToast('PDF 변환이 완료되었습니다', 'success');
 
     } catch (error) {
-      console.error('Conversion error:', error);
-      setErrorMessage(error.message || '변환 중 오류가 발생했습니다');
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Conversion error:', error);
+      }
+      // 서버에서 sanitize된 에러 메시지 사용, 없으면 기본 메시지
+      const userMessage = error.message || '변환 중 오류가 발생했습니다';
+      setErrorMessage(userMessage);
       setStatus(STATUS.ERROR);
-      showToast(error.message || '변환에 실패했습니다', 'error');
+      showToast(userMessage, 'error');
     }
   };
 
