@@ -1,0 +1,37 @@
+import { useLocation, useNavigate } from 'react-router-dom';
+import SegmentedControl from './SegmentedControl';
+import './NavBar.css';
+
+function NavBar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const tabs = [
+    { id: 'csv', label: 'CSV', path: '/csv' },
+    { id: 'convert', label: 'Convert', path: '/convert' }
+  ];
+
+  const activeTab = location.pathname === '/convert' ? 'convert' : 'csv';
+
+  const handleTabChange = (tabId) => {
+    const tab = tabs.find(t => t.id === tabId);
+    if (tab) {
+      navigate(tab.path);
+    }
+  };
+
+  return (
+    <nav className="navbar">
+      <div className="navbar-content">
+        <h1 className="navbar-title">Data Tools</h1>
+        <SegmentedControl
+          tabs={tabs}
+          activeTab={activeTab}
+          onChange={handleTabChange}
+        />
+      </div>
+    </nav>
+  );
+}
+
+export default NavBar;

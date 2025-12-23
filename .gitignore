@@ -1,0 +1,54 @@
+### IntelliJ IDEA ###
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+.kotlin
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Node.js ###
+node_modules/
+
+### Build output ###
+client/dist/
+
+### Temp files ###
+server/temp/
+
+### Logs ###
+*.log
+npm-debug.log*
+
+### Environment ###
+.env
+.env.local
+.env.*.local
+
+### Runtime ###
+*.pid
+
+### Windows ###
+Thumbs.db
