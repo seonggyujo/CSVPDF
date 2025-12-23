@@ -15,12 +15,11 @@ RestartSec=5
 Environment=NODE_ENV=production
 Environment=PORT=4000
 
-# Security hardening
+# Security hardening (relaxed for LibreOffice compatibility)
 NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=/tmp
+PrivateTmp=false
+ProtectSystem=false
+ProtectHome=false
 
 # Logging
 StandardOutput=journal
