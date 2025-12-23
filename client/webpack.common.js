@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   entry: './src/index.jsx',
@@ -10,7 +11,10 @@ module.exports = {
     clean: true
   },
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx'],
+    fallback: {
+      buffer: require.resolve('buffer/')
+    }
   },
   module: {
     rules: [
@@ -31,6 +35,9 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
       filename: 'index.html'
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer']
     })
   ]
 };

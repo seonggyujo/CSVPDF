@@ -1,5 +1,8 @@
 import { useState, useMemo } from 'react';
 import Papa from 'papaparse';
+import jschardet from 'jschardet';
+import iconv from 'iconv-lite';
+import { Buffer } from 'buffer';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import Card from '../components/common/Card';
 import FileDropZone from '../components/common/FileDropZone';
@@ -10,6 +13,29 @@ import './CsvPage.css';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_ROWS = 50000;
 const MAX_COLUMNS = 100;
+
+// 인코딩 감지 및 UTF-8 변환 함수
+const decodeFileToUtf8 = (arrayBuffer) => {
+  const uint8Array = new Uint8Array(arrayBuffer);
+  
+  // 인코딩 감지
+  const detected = jschardet.detect(Buffer.from(uint8Array));
+  let encoding = detected.encoding || 'UTF-8';
+  
+  // EUC-KR 계열 통합 (CP949, EUC-KR, ISO-8859-1 등)
+  if (encoding === 'ISO-8859-1' || encoding === 'windows-1252' || encoding === 'ascii') {
+    // 한글이 포함된 파일인데 잘못 감지된 경우 EUC-KR로 시도
+    encoding = 'EUC-KR';
+  }
+  
+  try {
+    const decoded = iconv.decode(Buffer.from(uint8Array), encoding);
+    return decoded;
+  } catch {
+    // 디코딩 실패 시 UTF-8로 fallback
+    return iconv.decode(Buffer.from(uint8Array), 'UTF-8');
+  }
+};
 
 function CsvPage() {
   const [data, setData] = useState(null);
@@ -34,40 +60,60 @@ function CsvPage() {
     setIsLoading(true);
     setFileName(file.name);
 
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      preview: MAX_ROWS + 1, // Read one extra to detect if file exceeds limit
-      complete: (results) => {
-        // Security: Check column limit
-        const fields = results.meta.fields || [];
-        if (fields.length > MAX_COLUMNS) {
-          showToast(`열 수는 ${MAX_COLUMNS}개를 초과할 수 없습니다`, 'error');
-          setIsLoading(false);
-          return;
-        }
-
-        // Security: Check row limit (불변성 유지)
-        let parsedData = results.data;
-        if (parsedData.length > MAX_ROWS) {
-          showToast(`행 수가 ${MAX_ROWS.toLocaleString()}개를 초과합니다. 처음 ${MAX_ROWS.toLocaleString()}행만 표시합니다`, 'warning');
-          parsedData = parsedData.slice(0, MAX_ROWS);
-        }
-
-        if (results.errors.length > 0 && process.env.NODE_ENV !== 'production') {
-          console.error('Parse errors:', results.errors);
-        }
+    // FileReader로 ArrayBuffer 읽기
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        // 인코딩 감지 및 UTF-8 변환
+        const text = decodeFileToUtf8(e.target.result);
         
-        setHeaders(fields);
-        setData(parsedData);
-        setIsLoading(false);
-        showToast('CSV 파일을 성공적으로 불러왔습니다', 'success');
-      },
-      error: () => {
-        showToast('파일을 읽는 중 오류가 발생했습니다', 'error');
+        // Papa.parse로 텍스트 파싱
+        Papa.parse(text, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            // Security: Check column limit
+            const fields = results.meta.fields || [];
+            if (fields.length > MAX_COLUMNS) {
+              showToast(`열 수는 ${MAX_COLUMNS}개를 초과할 수 없습니다`, 'error');
+              setIsLoading(false);
+              return;
+            }
+
+            // Security: Check row limit (불변성 유지)
+            let parsedData = results.data;
+            if (parsedData.length > MAX_ROWS) {
+              showToast(`행 수가 ${MAX_ROWS.toLocaleString()}개를 초과합니다. 처음 ${MAX_ROWS.toLocaleString()}행만 표시합니다`, 'warning');
+              parsedData = parsedData.slice(0, MAX_ROWS);
+            }
+
+            if (results.errors.length > 0 && process.env.NODE_ENV !== 'production') {
+              console.error('Parse errors:', results.errors);
+            }
+            
+            setHeaders(fields);
+            setData(parsedData);
+            setIsLoading(false);
+            showToast('CSV 파일을 성공적으로 불러왔습니다', 'success');
+          },
+          error: () => {
+            showToast('파일을 읽는 중 오류가 발생했습니다', 'error');
+            setIsLoading(false);
+          }
+        });
+      } catch {
+        showToast('파일 인코딩 변환 중 오류가 발생했습니다', 'error');
         setIsLoading(false);
       }
-    });
+    };
+    
+    reader.onerror = () => {
+      showToast('파일을 읽는 중 오류가 발생했습니다', 'error');
+      setIsLoading(false);
+    };
+    
+    reader.readAsArrayBuffer(file);
   };
 
   // Calculate statistics
