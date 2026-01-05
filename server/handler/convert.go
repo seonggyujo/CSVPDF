@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"csvpdf-server/service"
 
@@ -18,9 +19,9 @@ const (
 
 // Allowed MIME types
 var allowedMimeTypes = map[string]bool{
-	"application/vnd.ms-powerpoint":                                          true,
+	"application/vnd.ms-powerpoint":                                             true,
 	"application/vnd.openxmlformats-officedocument.presentationml.presentation": true,
-	"application/octet-stream": true,
+	"application/octet-stream":                                                  true,
 }
 
 // Magic numbers for file validation
@@ -110,9 +111,10 @@ func ConvertPPTToPDF(c *gin.Context) {
 	c.Header("Content-Disposition", "attachment; filename=\""+safePDFName+"\"")
 	c.File(pdfPath)
 
-	// Cleanup after sending (deferred)
+	// Cleanup after sending (deferred with delay to ensure file transfer completes)
 	go func() {
-		// Wait a bit before cleanup to ensure file is sent
+		// Wait 10 seconds to ensure file is fully sent to client
+		time.Sleep(10 * time.Second)
 		os.RemoveAll(tempDir)
 	}()
 }
@@ -121,7 +123,7 @@ func ConvertPPTToPDF(c *gin.Context) {
 func sanitizeFilename(filename string) string {
 	// Remove path traversal attempts
 	filename = filepath.Base(filename)
-	
+
 	// Replace dangerous characters
 	replacer := strings.NewReplacer(
 		"..", "",
