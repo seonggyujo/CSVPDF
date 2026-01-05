@@ -19,22 +19,30 @@ function StampGenerator({ onSave, onClose }) {
     return `${year}.${month}.${day}`;
   };
 
-  // 도장 미리보기 렌더링
+  // 도장 미리보기 렌더링 (3배 해상도로 고화질 생성)
   const renderPreview = useCallback(() => {
     const canvas = previewCanvasRef.current;
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
-    const size = 150;
+    const displaySize = 150;  // 화면 표시 크기
+    const scale = 3;          // 3배 해상도
+    const size = displaySize * scale;  // 실제 캔버스 크기: 450
+    
     canvas.width = size;
     canvas.height = size;
+    canvas.style.width = displaySize + 'px';
+    canvas.style.height = displaySize + 'px';
+    
+    // 스케일 적용 (이후 모든 좌표는 displaySize 기준으로 작성)
+    ctx.scale(scale, scale);
     
     // 배경 클리어 (투명)
-    ctx.clearRect(0, 0, size, size);
+    ctx.clearRect(0, 0, displaySize, displaySize);
     
-    const centerX = size / 2;
-    const centerY = size / 2;
-    const radius = size / 2 - borderWidth - 5;
+    const centerX = displaySize / 2;
+    const centerY = displaySize / 2;
+    const radius = displaySize / 2 - borderWidth - 5;
     
     ctx.strokeStyle = color;
     ctx.lineWidth = borderWidth;

@@ -1,5 +1,10 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 
+// 3배 해상도 상수
+const DISPLAY_WIDTH = 450;
+const DISPLAY_HEIGHT = 200;
+const SCALE = 3;
+
 function SignatureCanvas({ onSave, onClose }) {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -7,30 +12,36 @@ function SignatureCanvas({ onSave, onClose }) {
   const [penSize, setPenSize] = useState(3);
   const [hasContent, setHasContent] = useState(false);
 
-  // 캔버스 초기화
+  // 캔버스 초기화 (3배 해상도)
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
+    
+    // 고해상도 캔버스 설정
+    canvas.width = DISPLAY_WIDTH * SCALE;
+    canvas.height = DISPLAY_HEIGHT * SCALE;
+    canvas.style.width = DISPLAY_WIDTH + 'px';
+    canvas.style.height = DISPLAY_HEIGHT + 'px';
+    
+    ctx.scale(SCALE, SCALE);
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
   }, []);
 
-  // 좌표 계산
+  // 좌표 계산 (CSS 크기 기준)
   const getCoordinates = useCallback((e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
     
     if (e.touches) {
       return {
-        x: (e.touches[0].clientX - rect.left) * scaleX,
-        y: (e.touches[0].clientY - rect.top) * scaleY
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top
       };
     }
     return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
     };
   }, []);
 
@@ -68,8 +79,12 @@ function SignatureCanvas({ onSave, onClose }) {
   const clearCanvas = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
+    
+    // 스케일 리셋 후 다시 적용
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(SCALE, SCALE);
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
     setHasContent(false);
   };
 
@@ -111,7 +126,7 @@ function SignatureCanvas({ onSave, onClose }) {
     }
     
     const croppedCanvas = document.createElement('canvas');
-    const padding = 10;
+    const padding = 10 * SCALE;  // 패딩도 스케일 적용
     croppedCanvas.width = bounds.width + padding * 2;
     croppedCanvas.height = bounds.height + padding * 2;
     const croppedCtx = croppedCanvas.getContext('2d');
@@ -166,8 +181,6 @@ function SignatureCanvas({ onSave, onClose }) {
         <div className="signature-canvas-wrapper">
           <canvas
             ref={canvasRef}
-            width={450}
-            height={200}
             className="signature-canvas"
             onMouseDown={startDrawing}
             onMouseMove={draw}
