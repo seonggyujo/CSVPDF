@@ -131,6 +131,10 @@ func staticServe(root string) gin.HandlerFunc {
 		// Check if file exists
 		fullPath := filepath.Join(root, path)
 		if _, err := os.Stat(fullPath); err == nil {
+			// Set correct MIME type for .mjs files
+			if filepath.Ext(path) == ".mjs" {
+				c.Header("Content-Type", "application/javascript")
+			}
 			fileServer.ServeHTTP(c.Writer, c.Request)
 			c.Abort()
 			return
