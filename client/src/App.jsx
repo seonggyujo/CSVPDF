@@ -4,6 +4,7 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import NavBar from './components/common/NavBar';
 import CsvPage from './pages/CsvPage';
 import ConvertPage from './pages/ConvertPage';
+import SignPage from './pages/SignPage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
                 <Route path="/" element={<Navigate to="/csv" replace />} />
                 <Route path="/csv" element={<CsvPage />} />
                 <Route path="/convert" element={<ConvertPage />} />
+                <Route path="/sign" element={<SignPage />} />
               </Routes>
             </main>
           </div>

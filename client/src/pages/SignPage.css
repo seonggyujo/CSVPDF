@@ -1,0 +1,428 @@
+.sign-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* Main Layout */
+.sign-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--spacing-lg);
+  min-height: 600px;
+}
+
+/* Sidebar - Page Thumbnails */
+.page-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.page-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: var(--spacing-xs);
+}
+
+.page-thumbnail {
+  position: relative;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: var(--color-white);
+}
+
+.page-thumbnail:hover {
+  border-color: var(--color-primary);
+}
+
+.page-thumbnail.selected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+}
+
+.page-thumbnail.active {
+  border-color: var(--color-primary);
+  border-width: 3px;
+}
+
+.page-thumbnail canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.page-number {
+  position: absolute;
+  bottom: var(--spacing-xs);
+  right: var(--spacing-xs);
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--color-white);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.page-checkbox {
+  position: absolute;
+  top: var(--spacing-xs);
+  left: var(--spacing-xs);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+/* Main Editor Area */
+.editor-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.pdf-canvas-container {
+  position: relative;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+}
+
+.pdf-canvas-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.pdf-canvas-container canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 600px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Toolbar */
+.sign-toolbar {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  padding: var(--spacing-md);
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.toolbar-group {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding-right: var(--spacing-md);
+  border-right: 1px solid var(--color-border);
+}
+
+.toolbar-group:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: 8px 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-family);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toolbar-btn:hover {
+  background: var(--color-secondary);
+  border-color: var(--color-text-secondary);
+}
+
+.toolbar-btn.active {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Signature Panel */
+.signature-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.panel-section {
+  padding: var(--spacing-md);
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.panel-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Signature Canvas */
+.signature-canvas-wrapper {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  overflow: hidden;
+}
+
+.signature-canvas {
+  display: block;
+  cursor: crosshair;
+}
+
+.signature-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+/* Stamp Generator */
+.stamp-preview {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.stamp-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.form-row label {
+  flex: 0 0 70px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.form-row input,
+.form-row select {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: var(--font-family);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-text);
+}
+
+.form-row input[type="color"] {
+  width: 40px;
+  height: 32px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.form-row input[type="number"] {
+  width: 80px;
+}
+
+.form-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Draggable Signature */
+.draggable-signature {
+  position: absolute;
+  cursor: move;
+  user-select: none;
+  border: 2px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.draggable-signature:hover,
+.draggable-signature.selected {
+  border-color: var(--color-primary);
+}
+
+.draggable-signature img {
+  display: block;
+  max-width: 100%;
+  pointer-events: none;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-white);
+  border-radius: 50%;
+  cursor: se-resize;
+  bottom: -6px;
+  right: -6px;
+}
+
+.delete-handle {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 20px;
+  height: 20px;
+  background: var(--color-error);
+  color: var(--color-white);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Actions */
+.sign-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-md);
+}
+
+/* Modal/Panel Overlay */
+.tool-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: var(--spacing-xl);
+  z-index: 1000;
+  max-width: 500px;
+  width: 90%;
+}
+
+.tool-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.tool-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+}
+
+.tool-panel-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.tool-panel-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.tool-panel-close:hover {
+  color: var(--color-text);
+}
+
+/* Image Uploader */
+.image-upload-zone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xl);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.image-upload-zone:hover {
+  border-color: var(--color-primary);
+  background: rgba(0, 122, 255, 0.03);
+}
+
+.image-preview {
+  max-width: 200px;
+  max-height: 150px;
+  object-fit: contain;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sign-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .page-sidebar {
+    order: 2;
+  }
+
+  .page-list {
+    flex-direction: row;
+    overflow-x: auto;
+    max-height: none;
+    padding-bottom: var(--spacing-xs);
+  }
+
+  .page-thumbnail {
+    flex: 0 0 120px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sign-toolbar {
+    flex-direction: column;
+  }
+
+  .toolbar-group {
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--spacing-sm);
+  }
+
+  .toolbar-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}

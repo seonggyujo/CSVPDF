@@ -8,10 +8,17 @@ function NavBar() {
   
   const tabs = [
     { id: 'csv', label: 'CSV', path: '/csv' },
-    { id: 'convert', label: 'Convert', path: '/convert' }
+    { id: 'convert', label: 'Convert', path: '/convert' },
+    { id: 'sign', label: 'Sign', path: '/sign' }
   ];
 
-  const activeTab = location.pathname === '/convert' ? 'convert' : 'csv';
+  const getActiveTab = () => {
+    if (location.pathname === '/convert') return 'convert';
+    if (location.pathname === '/sign') return 'sign';
+    return 'csv';
+  };
+
+  const activeTab = getActiveTab();
 
   const handleTabChange = (tabId) => {
     const tab = tabs.find(t => t.id === tabId);

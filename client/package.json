@@ -12,6 +12,8 @@
     "iconv-lite": "^0.7.1",
     "jschardet": "^3.1.4",
     "papaparse": "^5.4.1",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.4.530",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0",
