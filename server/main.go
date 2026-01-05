@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
+	"time"
 
 	"csvpdf-server/handler"
 	"csvpdf-server/middleware"
@@ -79,12 +83,37 @@ func main() {
 	// Start cleanup job
 	go service.StartCleanupJob()
 
-	// Start server
-	log.Printf("Server running on port %s", port)
-	log.Printf("Environment: %s", env)
-	if err := r.Run(":" + port); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	// Create HTTP server
+	srv := &http.Server{
+		Addr:    ":" + port,
+		Handler: r,
 	}
+
+	// Start server in goroutine
+	go func() {
+		log.Printf("Server running on port %s", port)
+		log.Printf("Environment: %s", env)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal (SIGINT, SIGTERM)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Shutting down server...")
+
+	// Give 30 seconds for ongoing requests to complete
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server exited gracefully")
 }
 
 // staticServe serves static files
@@ -92,7 +121,7 @@ func staticServe(root string) gin.HandlerFunc {
 	fileServer := http.FileServer(http.Dir(root))
 	return func(c *gin.Context) {
 		path := c.Request.URL.Path
-		
+
 		// Skip API routes
 		if len(path) >= 4 && path[:4] == "/api" {
 			c.Next()
@@ -106,7 +135,7 @@ func staticServe(root string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		c.Next()
 	}
 }

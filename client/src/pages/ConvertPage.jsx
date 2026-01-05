@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Card from '../components/common/Card';
 import FileDropZone from '../components/common/FileDropZone';
 import { useToast } from '../context/ToastContext';
@@ -12,6 +12,9 @@ const STATUS = {
   ERROR: 'error'
 };
 
+// 3분 타임아웃 (대용량 PPT 변환 고려)
+const CONVERT_TIMEOUT = 180000;
+
 function ConvertPage() {
   const [status, setStatus] = useState(STATUS.IDLE);
   const [fileName, setFileName] = useState('');
@@ -20,6 +23,10 @@ function ConvertPage() {
   const [pdfFileName, setPdfFileName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const { showToast } = useToast();
+  
+  // AbortController 참조
+  const abortControllerRef = useRef(null);
+  const timeoutIdRef = useRef(null);
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
@@ -41,6 +48,14 @@ function ConvertPage() {
       return;
     }
 
+    // 이전 요청이 있으면 취소
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current);
+    }
+
     setFileName(file.name);
     setFileSize(file.size);
     setStatus(STATUS.UPLOADING);
@@ -50,13 +65,28 @@ function ConvertPage() {
     const formData = new FormData();
     formData.append('file', file);
 
+    // 새 AbortController 생성
+    abortControllerRef.current = new AbortController();
+    
+    // 타임아웃 설정
+    timeoutIdRef.current = setTimeout(() => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    }, CONVERT_TIMEOUT);
+
     try {
       setStatus(STATUS.CONVERTING);
 
       const response = await fetch('/api/convert/ppt-to-pdf', {
         method: 'POST',
-        body: formData
+        body: formData,
+        signal: abortControllerRef.current.signal
       });
+
+      // 타임아웃 클리어
+      clearTimeout(timeoutIdRef.current);
+      timeoutIdRef.current = null;
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -72,14 +102,32 @@ function ConvertPage() {
       showToast('PDF 변환이 완료되었습니다', 'success');
 
     } catch (error) {
+      // 타임아웃 클리어
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+        timeoutIdRef.current = null;
+      }
+
       if (process.env.NODE_ENV !== 'production') {
         console.error('Conversion error:', error);
       }
+
+      // AbortError 처리 (사용자 취소 또는 타임아웃)
+      if (error.name === 'AbortError') {
+        const userMessage = '변환이 취소되었거나 시간이 초과되었습니다';
+        setErrorMessage(userMessage);
+        setStatus(STATUS.ERROR);
+        showToast(userMessage, 'error');
+        return;
+      }
+
       // 서버에서 sanitize된 에러 메시지 사용, 없으면 기본 메시지
       const userMessage = error.message || '변환 중 오류가 발생했습니다';
       setErrorMessage(userMessage);
       setStatus(STATUS.ERROR);
       showToast(userMessage, 'error');
+    } finally {
+      abortControllerRef.current = null;
     }
   };
 
@@ -97,6 +145,16 @@ function ConvertPage() {
   };
 
   const handleReset = () => {
+    // 진행 중인 요청 취소
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current);
+      timeoutIdRef.current = null;
+    }
+
     setStatus(STATUS.IDLE);
     setFileName('');
     setFileSize(0);
