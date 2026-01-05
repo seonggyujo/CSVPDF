@@ -20,6 +20,7 @@ function SegmentedControl({ tabs, activeTab, onChange }) {
         <div
           className="segmented-control-slider"
           style={{
+            width: `calc(${100 / tabs.length}% - 2px)`,
             transform: `translateX(${tabs.findIndex(t => t.id === activeTab) * 100}%)`
           }}
         />
