@@ -167,8 +167,9 @@ function SignPage() {
         const isJpeg = sig.imageData.startsWith('data:image/jpeg') || 
                        sig.imageData.startsWith('data:image/jpg');
         
-        // Base64 이미지를 임베드
-        const imageBytes = await fetch(sig.imageData).then(res => res.arrayBuffer());
+        // Base64 이미지를 ArrayBuffer로 변환 (fetch 대신 직접 디코딩 - CSP 호환)
+        const base64Data = sig.imageData.split(',')[1];
+        const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
         const image = isJpeg 
           ? await pdfDoc.embedJpg(imageBytes)
           : await pdfDoc.embedPng(imageBytes);
