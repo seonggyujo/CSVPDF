@@ -131,10 +131,22 @@ func staticServe(root string) gin.HandlerFunc {
 		// Check if file exists
 		fullPath := filepath.Join(root, path)
 		if _, err := os.Stat(fullPath); err == nil {
+			ext := filepath.Ext(path)
+
 			// Set correct MIME type for .mjs files
-			if filepath.Ext(path) == ".mjs" {
+			if ext == ".mjs" {
 				c.Header("Content-Type", "application/javascript")
 			}
+
+			// 캐시 정책 설정
+			if ext == ".html" || path == "/" {
+				// HTML은 캐시하지 않음 (항상 최신 버전 가져옴)
+				c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+			} else if ext == ".js" || ext == ".css" || ext == ".mjs" {
+				// JS/CSS는 contenthash가 있으므로 장기 캐시 가능
+				c.Header("Cache-Control", "public, max-age=31536000, immutable")
+			}
+
 			fileServer.ServeHTTP(c.Writer, c.Request)
 			c.Abort()
 			return
