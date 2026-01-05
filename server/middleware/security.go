@@ -13,6 +13,7 @@ func SecurityHeaders() gin.HandlerFunc {
 				"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "+
 				"font-src 'self' https://fonts.gstatic.com; "+
 				"script-src 'self'; "+
+				"worker-src 'self' blob:; "+
 				"img-src 'self' data: blob:; "+
 				"connect-src 'self'; "+
 				"object-src 'none'; "+
