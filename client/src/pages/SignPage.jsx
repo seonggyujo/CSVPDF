@@ -63,28 +63,53 @@ function SignPage() {
     setScaleInfo(info);
   }, []);
 
-  // 서명 추가
+  // 서명 추가 (이미지 원본 비율 유지)
   const addSignature = useCallback((imageData) => {
     if (!scaleInfo) {
       showToast('PDF가 로드되지 않았습니다.', 'error');
       return;
     }
     
-    const newSignature = {
-      id: Date.now(),
-      imageData,
-      page: currentPage,
-      x: 100,
-      y: 100,
-      width: 150,
-      height: 75,
-      scale: scaleInfo.scale  // 생성 시점의 scale 저장
+    const img = new Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      let displayWidth = 150;
+      let displayHeight = displayWidth / aspectRatio;
+      
+      // 최소/최대 크기 제한
+      const minSize = 30;
+      const maxSize = 300;
+      
+      if (displayHeight < minSize) {
+        displayHeight = minSize;
+        displayWidth = displayHeight * aspectRatio;
+      } else if (displayHeight > maxSize) {
+        displayHeight = maxSize;
+        displayWidth = displayHeight * aspectRatio;
+      }
+      
+      const newSignature = {
+        id: Date.now(),
+        imageData,
+        page: currentPage,
+        x: 100,
+        y: 100,
+        width: displayWidth,
+        height: displayHeight,
+        scale: scaleInfo.scale  // 생성 시점의 scale 저장
+      };
+      
+      setSignatures(prev => [...prev, newSignature]);
+      setSelectedSignature(newSignature.id);
+      setActiveTool(null);
+      showToast('서명이 추가되었습니다. 드래그하여 위치를 조정하세요.', 'success');
     };
     
-    setSignatures(prev => [...prev, newSignature]);
-    setSelectedSignature(newSignature.id);
-    setActiveTool(null);
-    showToast('서명이 추가되었습니다. 드래그하여 위치를 조정하세요.', 'success');
+    img.onerror = () => {
+      showToast('이미지를 로드할 수 없습니다.', 'error');
+    };
+    
+    img.src = imageData;
   }, [currentPage, scaleInfo, showToast]);
 
   // 서명 이동
