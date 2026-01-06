@@ -24,9 +24,11 @@ function PdfViewer({
   const [thumbnails, setThumbnails] = useState([]);
   const [pageSize, setPageSize] = useState({ width: 0, height: 0 });
   const [renderScale, setRenderScale] = useState(1);
+  const [justDragged, setJustDragged] = useState(false);
   const mainCanvasRef = useRef(null);
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
+  const dragTimerRef = useRef(null);
 
   // PDF 로드
   useEffect(() => {
