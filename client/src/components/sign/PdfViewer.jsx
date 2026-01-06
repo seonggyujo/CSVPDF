@@ -306,6 +306,7 @@ function PdfViewer({
                     />
                     <button
                       className="delete-handle"
+                      onMouseDown={(e) => e.stopPropagation()}
                       onClick={(e) => {
                         e.stopPropagation();
                         onSignatureDelete(sig.id);
