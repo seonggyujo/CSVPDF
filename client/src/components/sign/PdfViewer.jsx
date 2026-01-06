@@ -166,6 +166,9 @@ function PdfViewer({
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     setDragSignature(null);
+    setJustDragged(true);
+    if (dragTimerRef.current) clearTimeout(dragTimerRef.current);
+    dragTimerRef.current = setTimeout(() => setJustDragged(false), 100);
   }, []);
 
   useEffect(() => {
@@ -209,6 +212,9 @@ function PdfViewer({
   const handleResizeUp = useCallback(() => {
     setIsResizing(false);
     setDragSignature(null);
+    setJustDragged(true);
+    if (dragTimerRef.current) clearTimeout(dragTimerRef.current);
+    dragTimerRef.current = setTimeout(() => setJustDragged(false), 100);
   }, []);
 
   useEffect(() => {
