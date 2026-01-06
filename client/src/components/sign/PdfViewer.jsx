@@ -228,6 +228,13 @@ function PdfViewer({
     }
   }, [isResizing, handleResizeMove, handleResizeUp]);
 
+  // 타이머 cleanup (메모리 누수 방지)
+  useEffect(() => {
+    return () => {
+      if (dragTimerRef.current) clearTimeout(dragTimerRef.current);
+    };
+  }, []);
+
   // 캔버스 클릭 시 선택 해제 (드래그 직후에는 무시)
   const handleCanvasClick = () => {
     if (justDragged) return;
