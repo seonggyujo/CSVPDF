@@ -228,8 +228,9 @@ function PdfViewer({
     }
   }, [isResizing, handleResizeMove, handleResizeUp]);
 
-  // 캔버스 클릭 시 선택 해제
+  // 캔버스 클릭 시 선택 해제 (드래그 직후에는 무시)
   const handleCanvasClick = () => {
+    if (justDragged) return;
     onSignatureSelect(null);
   };
 
